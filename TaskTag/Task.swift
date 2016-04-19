@@ -13,7 +13,7 @@ class Task {
    var name: String
    var isComplete = false
 
-   lazy var tags = [Tag]()
+   lazy var tags = [String]()
 
    var dueDate: NSDate?
    var priority = Priority.None
@@ -22,13 +22,18 @@ class Task {
    lazy var steps = [Step]()
    var notes: String?
 
-   init(_ name: String, withTags tags: [Tag]?) {
+   init(_ name: String, withTags tags: [String]?) {
       self.name = name
 
       if tags != nil {
-         self.tags += tags!
+         for tag in tags! {
+            if tag.isEmpty == false {
+               self.tags.append(tag)
+            }
+         }
       }
    }
+
 }
 
 class Step {
@@ -39,6 +44,7 @@ class Step {
    init(_ name: String) {
       self.name = name
    }
+
 }
 
 enum Priority {
