@@ -14,7 +14,20 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
    var tasks = [Task]()
    var tags = [String]()
+
    var selectedTags = [String]()
+
+   var selectedTasks: [Task] {
+      var selected = [Task]()
+      for task in tasks {
+         for tag in selectedTags {
+            if task.tags.contains(tag) {
+               selected.append(task)
+            }
+         }
+      }
+      return selected
+   }
 
    override func viewDidLoad() {
       createSampleData()
@@ -25,22 +38,21 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       if tags == selectedTags {
          return tasks.count
       } else {
-         var selectedTaskCount = 0
-         for task in tasks {
-            for tag in selectedTags {
-               if task.tags.contains(tag) {
-                  selectedTaskCount += 1
-               }
-            }
-         }
-         return selectedTaskCount
+         return selectedTasks.count
       }
    }
 
    func tableView(tableView: UITableView,
                   cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 
-      let task = tasks[indexPath.row]
+      let task: Task
+
+      if tags == selectedTags {
+         task = tasks[indexPath.row]
+      } else {
+         task = selectedTasks[indexPath.row]
+      }
+      
       var cell: UITableViewCell
 
       if task.tags.isEmpty {
