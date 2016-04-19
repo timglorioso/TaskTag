@@ -14,13 +14,27 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
    var tasks = [Task]()
    var tags = [String]()
+   var selectedTags = [String]()
 
    override func viewDidLoad() {
       createSampleData()
    }
 
    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-      return tasks.count
+
+      if tags == selectedTags {
+         return tasks.count
+      } else {
+         var selectedTaskCount = 0
+         for task in tasks {
+            for tag in selectedTags {
+               if task.tags.contains(tag) {
+                  selectedTaskCount += 1
+               }
+            }
+         }
+         return selectedTaskCount
+      }
    }
 
    func tableView(tableView: UITableView,
@@ -56,6 +70,16 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       }
    }
 
+   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+
+      if segue.identifier == "ShowTags" {
+
+         let tagsViewController = (segue.destinationViewController as! UINavigationController)
+            .topViewController as! TagsViewController
+         tagsViewController.allTags = tags
+      }
+   }
+
    @IBAction func unwindToTaskList(sender: UIStoryboardSegue) {
 
       if let newTaskViewController = sender.sourceViewController as? NewTaskViewController {
@@ -65,6 +89,11 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
          saveNewTask(newTask)
          tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Bottom)
+         
+      } else if let tagsViewController = sender.sourceViewController as? TagsViewController {
+
+         selectedTags = tagsViewController.selectedTags
+         tableView.reloadData()
       }
    }
 
@@ -84,6 +113,7 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       let schoolTag = "school"
       let leisureTag = "leisure"
       tags += [professionalTag, schoolTag, leisureTag]
+      selectedTags += tags
 
       let finishThisAppTask = Task("finish this app", withTags: [professionalTag, schoolTag])
       let finishFontTask = Task("finish font", withTags: [leisureTag])
