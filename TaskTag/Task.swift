@@ -27,7 +27,7 @@ class Task {
 
       if tags != nil {
          for tag in tags! {
-            if tag.isEmpty == false {
+            if tag.isEmpty == false && self.tags.contains(tag) == false {
                self.tags.append(tag)
             }
          }

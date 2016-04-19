@@ -53,6 +53,12 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          let newIndexPath = NSIndexPath(forRow: tasks.count, inSection: 0)
 
          tasks.append(newTask)
+         for tag in newTask.tags {
+            if tags.contains(tag) == false {
+               tags.append(tag)
+            }
+         }
+
          tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Bottom)
       }
    }
