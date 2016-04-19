@@ -23,7 +23,8 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       return tasks.count
    }
 
-   func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+   func tableView(tableView: UITableView,
+                  cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 
       let task = tasks[indexPath.row]
       var cell: UITableViewCell
@@ -45,6 +46,16 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       return cell
    }
 
+   func tableView(tableView: UITableView,
+                  heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+
+      if tasks[indexPath.row].tags.isEmpty {
+         return 44.0
+      } else {
+         return 55.0
+      }
+   }
+
    @IBAction func unwindToTaskList(sender: UIStoryboardSegue) {
 
       if let newTaskViewController = sender.sourceViewController as? NewTaskViewController {
@@ -52,14 +63,18 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          let newTask = newTaskViewController.newTask!
          let newIndexPath = NSIndexPath(forRow: tasks.count, inSection: 0)
 
-         tasks.append(newTask)
-         for tag in newTask.tags {
-            if tags.contains(tag) == false {
-               tags.append(tag)
-            }
-         }
-
+         saveNewTask(newTask)
          tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Bottom)
+      }
+   }
+
+   func saveNewTask(task: Task) {
+
+      tasks.append(task)
+      for tag in task.tags {
+         if tags.contains(tag) == false {
+            tags.append(tag)
+         }
       }
    }
 
