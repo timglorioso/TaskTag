@@ -9,8 +9,10 @@
 import XCTest
 @testable import TaskTag
 
+// This class tests Task.swift, which contains the Task model class
 class TaskModelTests: XCTestCase {
 
+   // This method tests that duplicate tags for this Task are removed during Task initialization
    func testNoDuplicateTags() {
 
       // create a Task with duplicate tags
@@ -20,6 +22,7 @@ class TaskModelTests: XCTestCase {
       XCTAssertTrue(task.tags == ["leisure", "bogus"])
    }
 
+   // This method tests that empty tags are removed during Task initialization
    func testNoEmptyTags() {
 
       // create a Task with empty tags

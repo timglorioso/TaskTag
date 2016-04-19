@@ -9,6 +9,7 @@
 import XCTest
 @testable import TaskTag
 
+// This class tests the ListViewController by instantiating it from the Main storyboard
 class ListViewControllerTests: XCTestCase {
 
    var listViewController: ListViewController?
@@ -21,6 +22,7 @@ class ListViewControllerTests: XCTestCase {
          as? ListViewController
    }
 
+   // This method tests that the ListViewControllers tag array won't contain duplicate tags
    func testNoDuplicateTags() {
 
       // create a Task with duplicate tags
