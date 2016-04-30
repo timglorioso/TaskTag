@@ -21,7 +21,14 @@ class TagsViewController: UITableViewController {
                            cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 
       let cell = tableView.dequeueReusableCellWithIdentifier("TagCell", forIndexPath: indexPath)
-      cell.textLabel?.text = allTags![indexPath.row]
+      let tagName = allTags![indexPath.row]
+
+      if tagName.isEmpty == false {
+         cell.textLabel?.text = allTags![indexPath.row]
+      } else {
+         cell.textLabel?.text = "untagged"
+         cell.textLabel?.textColor = UIColor.darkGrayColor()
+      }
 
       return cell
    }
@@ -34,7 +41,11 @@ class TagsViewController: UITableViewController {
             let selectedCell = tableView.cellForRowAtIndexPath(indexPath)
 
             if let tag = selectedCell?.textLabel?.text {
-               selectedTags.append(tag)
+               if tag == "untagged" {
+                  selectedTags.append("")
+               } else {
+                  selectedTags.append(tag)
+               }
             }
          }
       }

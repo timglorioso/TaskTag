@@ -13,46 +13,43 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
    @IBOutlet weak var tableView: UITableView!
 
    var tasks = [Task]()
-   var tags = [String]()
 
-   var selectedTags = [String]()
+   var tags: Set<String> {
+      var t = Set<String>()
+      for task in tasks {
+         t.unionInPlace(task.tags)
+      }
+      return t
+   }
+
+   var selectedTags = Set<String>()
 
    var selectedTasks: [Task] {
-      var selected = [Task]()
+      var t = [Task]()
       for task in tasks {
-         for tag in selectedTags {
-            if task.tags.contains(tag) {
-               selected.append(task)
-            }
+         if selectedTags.intersect(task.tags).isEmpty == false {
+            t.append(task)
          }
       }
-      return selected
+      return t
    }
 
    override func viewDidLoad() {
       createSampleData()
    }
 
-   func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+   func resetSelectedTags() {
+      selectedTags = tags
+   }
 
-      if tags == selectedTags {
-         return tasks.count
-      } else {
-         return selectedTasks.count
-      }
+   func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+      return selectedTasks.count
    }
 
    func tableView(tableView: UITableView,
                   cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 
-      let task: Task
-
-      if tags == selectedTags {
-         task = tasks[indexPath.row]
-      } else {
-         task = selectedTasks[indexPath.row]
-      }
-      
+      let task = selectedTasks[indexPath.row]
       var cell: UITableViewCell
 
       if task.tags.isEmpty {
@@ -62,7 +59,9 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
          var tagsLabel = ""
          for tag in task.tags {
-            tagsLabel.appendContentsOf("#" + tag + " ")
+            if tag.isEmpty == false {
+               tagsLabel.appendContentsOf("#" + tag + " ")
+            }
          }
          cell.detailTextLabel?.text = tagsLabel
       }
@@ -72,23 +71,13 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       return cell
    }
 
-   func tableView(tableView: UITableView,
-                  heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-
-      if tasks[indexPath.row].tags.isEmpty {
-         return 44.0
-      } else {
-         return 55.0
-      }
-   }
-
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 
       if segue.identifier == "ShowTags" {
 
          let tagsViewController = (segue.destinationViewController as! UINavigationController)
             .topViewController as! TagsViewController
-         tagsViewController.allTags = tags
+         tagsViewController.allTags = Array(tags)
       }
    }
 
@@ -97,25 +86,14 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       if let newTaskViewController = sender.sourceViewController as? NewTaskViewController {
 
          let newTask = newTaskViewController.newTask!
-         let newIndexPath = NSIndexPath(forRow: tasks.count, inSection: 0)
+         tasks.append(newTask)
+         selectedTags.unionInPlace(newTask.tags)
+         tableView.reloadData()
 
-         saveNewTask(newTask)
-         tableView.insertRowsAtIndexPaths([newIndexPath], withRowAnimation: .Bottom)
-         
       } else if let tagsViewController = sender.sourceViewController as? TagsViewController {
 
-         selectedTags = tagsViewController.selectedTags
+         selectedTags = Set(tagsViewController.selectedTags)
          tableView.reloadData()
-      }
-   }
-
-   func saveNewTask(task: Task) {
-
-      tasks.append(task)
-      for tag in task.tags {
-         if tags.contains(tag) == false {
-            tags.append(tag)
-         }
       }
    }
 
@@ -124,13 +102,14 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       let professionalTag = "professional"
       let schoolTag = "school"
       let leisureTag = "leisure"
-      tags += [professionalTag, schoolTag, leisureTag]
-      selectedTags += tags
 
       let finishThisAppTask = Task("finish this app", withTags: [professionalTag, schoolTag])
       let finishFontTask = Task("finish font", withTags: [leisureTag])
       let eatPizzaTask = Task("eat pizza", withTags: nil)
+
       tasks += [finishThisAppTask, finishFontTask, eatPizzaTask]
+
+      resetSelectedTags()
    }
 }
 

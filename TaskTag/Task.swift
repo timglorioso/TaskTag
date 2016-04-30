@@ -13,7 +13,7 @@ class Task {
    var name: String
    var isComplete = false
 
-   lazy var tags = [String]()
+   lazy var tags = Set<String>()
 
    var dueDate: NSDate?
    var priority = Priority.None
@@ -27,10 +27,10 @@ class Task {
 
       if tags != nil {
          for tag in tags! {
-            if tag.isEmpty == false && self.tags.contains(tag) == false {
-               self.tags.append(tag)
-            }
+            self.tags.insert(tag)
          }
+      } else {
+         self.tags.insert("")
       }
    }
 
