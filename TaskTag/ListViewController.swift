@@ -78,6 +78,7 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          let tagsViewController = (segue.destinationViewController as! UINavigationController)
             .topViewController as! TagsViewController
          tagsViewController.allTags = Array(tags)
+         tagsViewController.selectedTags = selectedTags
       }
    }
 
@@ -92,7 +93,7 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
       } else if let tagsViewController = sender.sourceViewController as? TagsViewController {
 
-         selectedTags = Set(tagsViewController.selectedTags)
+         selectedTags = Set(tagsViewController.selectedTags!)
          tableView.reloadData()
       }
    }

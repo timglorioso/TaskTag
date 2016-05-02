@@ -11,7 +11,7 @@ import UIKit
 class TagsViewController: UITableViewController {
 
    var allTags: [String]?
-   lazy var selectedTags = [String]()
+   var selectedTags: Set<String>?
 
    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
       return allTags!.count
@@ -30,7 +30,42 @@ class TagsViewController: UITableViewController {
          cell.textLabel?.textColor = UIColor.darkGrayColor()
       }
 
+      if selectedTags!.contains(tagName) {
+         cell.accessoryType = .Checkmark
+         tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: .None)
+      }
+
       return cell
+   }
+
+   override func tableView(tableView: UITableView,
+                           willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+
+      print("selecting")
+
+      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
+         cell.accessoryType = .Checkmark
+         selectedTags!.insert(cell.textLabel!.text!)
+      }
+
+      return indexPath
+   }
+
+   override func tableView(tableView: UITableView,
+                           willDeselectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+
+      print("deselecting")
+
+      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
+         cell.accessoryType = .None
+         if cell.textLabel!.text! == "untagged" {
+            selectedTags!.remove("")
+         } else {
+            selectedTags!.remove(cell.textLabel!.text!)
+         }
+      }
+
+      return indexPath
    }
 
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -42,9 +77,10 @@ class TagsViewController: UITableViewController {
 
             if let tag = selectedCell?.textLabel?.text {
                if tag == "untagged" {
-                  selectedTags.append("")
+                  selectedTags!.insert("")
+                  selectedTags!.remove("untagged")
                } else {
-                  selectedTags.append(tag)
+                  selectedTags!.insert(tag)
                }
             }
          }
