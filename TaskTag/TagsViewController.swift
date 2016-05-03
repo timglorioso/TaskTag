@@ -13,6 +13,24 @@ class TagsViewController: UITableViewController {
    var allTags: [String]?
    var selectedTags: Set<String>?
 
+   var selectionButtons = [String: UIBarButtonItem]()
+
+   override func viewDidLoad() {
+      createSelectionButtons()
+      updateSelectionButton()
+   }
+
+   func createSelectionButtons() {
+      selectionButtons["select"] = UIBarButtonItem(title: "Select All", style: .Plain,
+                                                   target: self,
+                                                   action: #selector(toggleTagSelection))
+      selectionButtons["deselect"] = UIBarButtonItem(title: "Deselect All", style: .Plain,
+                                                     target: self,
+                                                     action: #selector(toggleTagSelection))
+      selectionButtons["select"]!.tintColor = UIColor.whiteColor()
+      selectionButtons["deselect"]!.tintColor = UIColor.whiteColor()
+   }
+
    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
       return allTags!.count
    }
@@ -41,20 +59,53 @@ class TagsViewController: UITableViewController {
    override func tableView(tableView: UITableView,
                            willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
 
-      print("selecting")
-
-      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
-         cell.accessoryType = .Checkmark
-         selectedTags!.insert(cell.textLabel!.text!)
-      }
-
+      configureSelectedCellAtIndexPath(indexPath)
+      updateSelectionButton()
       return indexPath
    }
 
    override func tableView(tableView: UITableView,
                            willDeselectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
 
-      print("deselecting")
+      configureDeselectedCellAtIndexPath(indexPath)
+      updateSelectionButton()
+      return indexPath
+   }
+
+   func toggleTagSelection(sender: UIBarButtonItem) {
+      if sender.title == "Deselect All" {
+         for tagIndex in 0..<allTags!.count {
+            let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
+            tableView.deselectRowAtIndexPath(indexPath, animated: false)
+            configureDeselectedCellAtIndexPath(indexPath)
+         }
+      } else if sender.title == "Select All" {
+         for tagIndex in 0..<allTags!.count {
+            let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
+            tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: .None)
+            configureSelectedCellAtIndexPath(indexPath)
+         }
+      }
+      updateSelectionButton()
+   }
+
+   func updateSelectionButton() {
+      if selectedTags!.count > allTags!.count / 2 {
+         navigationItem.setLeftBarButtonItem(selectionButtons["deselect"], animated: true)
+      } else {
+         navigationItem.setLeftBarButtonItem(selectionButtons["select"], animated: true)
+      }
+   }
+
+   func configureSelectedCellAtIndexPath(indexPath: NSIndexPath) {
+
+      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
+         cell.accessoryType = .Checkmark
+         selectedTags!.insert(cell.textLabel!.text!)
+      }
+   }
+
+   func configureDeselectedCellAtIndexPath(indexPath: NSIndexPath) {
 
       if let cell = tableView.cellForRowAtIndexPath(indexPath) {
          cell.accessoryType = .None
@@ -64,8 +115,6 @@ class TagsViewController: UITableViewController {
             selectedTags!.remove(cell.textLabel!.text!)
          }
       }
-
-      return indexPath
    }
 
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
