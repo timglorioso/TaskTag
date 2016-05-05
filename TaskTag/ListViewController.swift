@@ -71,6 +71,27 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       return cell
    }
 
+   func tableView(tableView: UITableView,
+                  editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
+      let complete = UITableViewRowAction(style: .Normal, title: "Complete", handler: taskAction)
+      complete.backgroundColor = UIColor(red: 0.05, green: 0.85, blue: 0.1, alpha: 1.0)
+
+      let delete = UITableViewRowAction(style: .Normal, title: "Delete", handler: taskAction)
+      delete.backgroundColor = UIColor.redColor()
+
+      return [delete, complete]
+   }
+
+   func taskAction(action: UITableViewRowAction, forRowAtIndexPath indexPath: NSIndexPath) {
+      let theTask = selectedTasks[indexPath.row]
+      for (index, task) in tasks.enumerate() {
+         if theTask === task {
+            tasks.removeAtIndex(index)
+         }
+      }
+      tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Left)
+   }
+
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
 
       if segue.identifier == "ShowTags" {
@@ -93,7 +114,7 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
       } else if let tagsViewController = sender.sourceViewController as? TagsViewController {
 
-         selectedTags = Set(tagsViewController.selectedTags!)
+         selectedTags = tagsViewController.selectedTags!
          tableView.reloadData()
       }
    }

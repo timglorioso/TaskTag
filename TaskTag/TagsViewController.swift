@@ -59,7 +59,7 @@ class TagsViewController: UITableViewController {
    override func tableView(tableView: UITableView,
                            willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
 
-      configureSelectedCellAtIndexPath(indexPath)
+      updateForSelectedCellAtIndexPath(indexPath)
       updateSelectionButton()
       return indexPath
    }
@@ -67,7 +67,7 @@ class TagsViewController: UITableViewController {
    override func tableView(tableView: UITableView,
                            willDeselectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
 
-      configureDeselectedCellAtIndexPath(indexPath)
+      updateForDeselectedCellAtIndexPath(indexPath)
       updateSelectionButton()
       return indexPath
    }
@@ -77,13 +77,13 @@ class TagsViewController: UITableViewController {
          for tagIndex in 0..<allTags!.count {
             let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
             tableView.deselectRowAtIndexPath(indexPath, animated: false)
-            configureDeselectedCellAtIndexPath(indexPath)
+            updateForDeselectedCellAtIndexPath(indexPath)
          }
       } else if sender.title == "Select All" {
          for tagIndex in 0..<allTags!.count {
             let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
             tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: .None)
-            configureSelectedCellAtIndexPath(indexPath)
+            updateForSelectedCellAtIndexPath(indexPath)
          }
       }
       updateSelectionButton()
@@ -97,15 +97,19 @@ class TagsViewController: UITableViewController {
       }
    }
 
-   func configureSelectedCellAtIndexPath(indexPath: NSIndexPath) {
+   func updateForSelectedCellAtIndexPath(indexPath: NSIndexPath) {
 
       if let cell = tableView.cellForRowAtIndexPath(indexPath) {
          cell.accessoryType = .Checkmark
-         selectedTags!.insert(cell.textLabel!.text!)
+         if cell.textLabel!.text! == "untagged" {
+            selectedTags!.insert("")
+         } else {
+            selectedTags!.insert(cell.textLabel!.text!)
+         }
       }
    }
 
-   func configureDeselectedCellAtIndexPath(indexPath: NSIndexPath) {
+   func updateForDeselectedCellAtIndexPath(indexPath: NSIndexPath) {
 
       if let cell = tableView.cellForRowAtIndexPath(indexPath) {
          cell.accessoryType = .None
@@ -118,22 +122,7 @@ class TagsViewController: UITableViewController {
    }
 
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-
-      if let selectedIndexPaths = tableView.indexPathsForSelectedRows {
-
-         for indexPath in selectedIndexPaths {
-            let selectedCell = tableView.cellForRowAtIndexPath(indexPath)
-
-            if let tag = selectedCell?.textLabel?.text {
-               if tag == "untagged" {
-                  selectedTags!.insert("")
-                  selectedTags!.remove("untagged")
-               } else {
-                  selectedTags!.insert(tag)
-               }
-            }
-         }
-      }
+      // ... (nothing?)
    }
 
 }
