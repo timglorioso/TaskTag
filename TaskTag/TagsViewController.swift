@@ -45,7 +45,7 @@ class TagsViewController: UITableViewController {
          cell.textLabel?.text = allTags![indexPath.row]
       } else {
          cell.textLabel?.text = "untagged"
-         cell.textLabel?.textColor = UIColor.darkGrayColor()
+         cell.textLabel?.textColor = UIColor.lightGrayColor()
       }
 
       if selectedTags!.contains(tagName) {

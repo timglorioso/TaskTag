@@ -90,6 +90,7 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          }
       }
       tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Left)
+      selectedTags.intersectInPlace(tags)
    }
 
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
