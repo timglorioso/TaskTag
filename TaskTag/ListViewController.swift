@@ -22,12 +22,16 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
       return t
    }
 
-   var selectedTags = Set<String>()
+   var optionalTags = Set<String>()
+   var requiredTags = Set<String>()
 
    var selectedTasks: [Task] {
       var t = [Task]()
       for task in tasks {
-         if selectedTags.intersect(task.tags).isEmpty == false {
+         let isOmitted = requiredTags.union(optionalTags).intersect(task.tags).isEmpty
+         let isRequired = requiredTags.isSubsetOf(task.tags)
+
+         if isRequired && !isOmitted {
             t.append(task)
          }
       }
@@ -39,7 +43,8 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
    }
 
    func resetSelectedTags() {
-      selectedTags = tags
+      optionalTags = tags
+      requiredTags.removeAll()
    }
 
    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -90,7 +95,8 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          }
       }
       tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Left)
-      selectedTags.intersectInPlace(tags)
+      optionalTags.intersectInPlace(tags)
+      requiredTags.intersectInPlace(tags)
    }
 
    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
@@ -100,7 +106,8 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
          let tagsViewController = (segue.destinationViewController as! UINavigationController)
             .topViewController as! TagsViewController
          tagsViewController.allTags = Array(tags)
-         tagsViewController.selectedTags = selectedTags
+         tagsViewController.optionalTags = optionalTags
+         tagsViewController.requiredTags = requiredTags
       }
    }
 
@@ -110,12 +117,13 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
 
          let newTask = newTaskViewController.newTask!
          tasks.append(newTask)
-         selectedTags.unionInPlace(newTask.tags)
+         optionalTags.unionInPlace(newTask.tags)
          tableView.reloadData()
 
       } else if let tagsViewController = sender.sourceViewController as? TagsViewController {
 
-         selectedTags = tagsViewController.selectedTags!
+         optionalTags = tagsViewController.optionalTags!
+         requiredTags = tagsViewController.requiredTags!
          tableView.reloadData()
       }
    }
@@ -123,14 +131,19 @@ class ListViewController: UIViewController, UITableViewDelegate, UITableViewData
    func createSampleData() {
 
       let professionalTag = "professional"
-      let schoolTag = "school"
       let leisureTag = "leisure"
+      let importantTag = "important"
 
-      let finishThisAppTask = Task("finish this app", withTags: [professionalTag, schoolTag])
+      let finishThisAppTask = Task("finish this app", withTags: [professionalTag, importantTag])
       let finishFontTask = Task("finish font", withTags: [leisureTag])
       let eatPizzaTask = Task("eat pizza", withTags: nil)
+      let buyABike = Task("buy a bike", withTags: [importantTag])
+      let survive = Task("survive", withTags: [importantTag])
+      let updateResume = Task("update resume", withTags: [professionalTag, importantTag])
+      let doMoreDesignWork = Task("do more design work", withTags: [professionalTag, leisureTag])
 
-      tasks += [finishThisAppTask, finishFontTask, eatPizzaTask]
+      tasks += [finishThisAppTask, finishFontTask, eatPizzaTask, buyABike, survive, updateResume,
+                doMoreDesignWork]
 
       resetSelectedTags()
    }

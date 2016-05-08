@@ -11,25 +11,14 @@ import UIKit
 class TagsViewController: UITableViewController {
 
    var allTags: [String]?
-   var selectedTags: Set<String>?
 
-   var selectionButtons = [String: UIBarButtonItem]()
+   var requiredTags: Set<String>?
+   var optionalTags: Set<String>?
 
-   override func viewDidLoad() {
-      createSelectionButtons()
-      updateSelectionButton()
-   }
+   var cellSelectionStates = [SelectionState]()
 
-   func createSelectionButtons() {
-      selectionButtons["select"] = UIBarButtonItem(title: "Select All", style: .Plain,
-                                                   target: self,
-                                                   action: #selector(toggleTagSelection))
-      selectionButtons["deselect"] = UIBarButtonItem(title: "Deselect All", style: .Plain,
-                                                     target: self,
-                                                     action: #selector(toggleTagSelection))
-      selectionButtons["select"]!.tintColor = UIColor.whiteColor()
-      selectionButtons["deselect"]!.tintColor = UIColor.whiteColor()
-   }
+   let emptyCheckmark = UIImage(named: "emptyCheckmark")
+   let filledCheckmark = UIImage(named: "filledCheckmark")
 
    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
       return allTags!.count
@@ -48,75 +37,59 @@ class TagsViewController: UITableViewController {
          cell.textLabel?.textColor = UIColor.lightGrayColor()
       }
 
-      if selectedTags!.contains(tagName) {
-         cell.accessoryType = .Checkmark
-         tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: .None)
+      if optionalTags!.contains(tagName) {
+         cell.accessoryView = UIImageView(image: emptyCheckmark)
+         cellSelectionStates.append(.Optional)
+      } else if requiredTags!.contains(tagName) {
+         cell.accessoryView = UIImageView(image: filledCheckmark)
+         cellSelectionStates.append(.Required)
+      } else {
+         cellSelectionStates.append(.Omitted)
       }
+
+      let singleTapRecognizer = UITapGestureRecognizer(target: self, action: #selector(selectTag))
+      cell.addGestureRecognizer(singleTapRecognizer)
 
       return cell
    }
 
-   override func tableView(tableView: UITableView,
-                           willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+   func selectTag(sender: UITapGestureRecognizer) {
+      if sender.state == .Ended {
+         let tappedCell = sender.view! as! UITableViewCell
+         let tappedIndexPath = tableView.indexPathForCell(tappedCell)!
+         let currentState = cellSelectionStates[tappedIndexPath.row]
 
-      updateForSelectedCellAtIndexPath(indexPath)
-      updateSelectionButton()
-      return indexPath
-   }
-
-   override func tableView(tableView: UITableView,
-                           willDeselectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-
-      updateForDeselectedCellAtIndexPath(indexPath)
-      updateSelectionButton()
-      return indexPath
-   }
-
-   func toggleTagSelection(sender: UIBarButtonItem) {
-      if sender.title == "Deselect All" {
-         for tagIndex in 0..<allTags!.count {
-            let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
-            tableView.deselectRowAtIndexPath(indexPath, animated: false)
-            updateForDeselectedCellAtIndexPath(indexPath)
-         }
-      } else if sender.title == "Select All" {
-         for tagIndex in 0..<allTags!.count {
-            let indexPath = NSIndexPath(forRow: tagIndex, inSection: 0)
-            tableView.selectRowAtIndexPath(indexPath, animated: false, scrollPosition: .None)
-            updateForSelectedCellAtIndexPath(indexPath)
-         }
-      }
-      updateSelectionButton()
-   }
-
-   func updateSelectionButton() {
-      if selectedTags!.count > allTags!.count / 2 {
-         navigationItem.setLeftBarButtonItem(selectionButtons["deselect"], animated: true)
-      } else {
-         navigationItem.setLeftBarButtonItem(selectionButtons["select"], animated: true)
-      }
-   }
-
-   func updateForSelectedCellAtIndexPath(indexPath: NSIndexPath) {
-
-      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
-         cell.accessoryType = .Checkmark
-         if cell.textLabel!.text! == "untagged" {
-            selectedTags!.insert("")
-         } else {
-            selectedTags!.insert(cell.textLabel!.text!)
-         }
-      }
-   }
-
-   func updateForDeselectedCellAtIndexPath(indexPath: NSIndexPath) {
-
-      if let cell = tableView.cellForRowAtIndexPath(indexPath) {
-         cell.accessoryType = .None
-         if cell.textLabel!.text! == "untagged" {
-            selectedTags!.remove("")
-         } else {
-            selectedTags!.remove(cell.textLabel!.text!)
+         switch currentState {
+         case .Omitted:
+            tappedCell.accessoryView = UIImageView(image: emptyCheckmark)
+            cellSelectionStates[tappedIndexPath.row] = .Optional
+            if tappedCell.textLabel!.text! == "untagged" {
+               optionalTags!.insert("")
+               requiredTags!.remove("")
+            } else {
+               optionalTags!.insert(tappedCell.textLabel!.text!)
+               requiredTags!.remove(tappedCell.textLabel!.text!)
+            }
+         case .Optional:
+            tappedCell.accessoryView = UIImageView(image: filledCheckmark)
+            cellSelectionStates[tappedIndexPath.row] = .Required
+            if tappedCell.textLabel!.text! == "untagged" {
+               optionalTags!.remove("")
+               requiredTags!.insert("")
+            } else {
+               optionalTags!.remove(tappedCell.textLabel!.text!)
+               requiredTags!.insert(tappedCell.textLabel!.text!)
+            }
+         case .Required:
+            tappedCell.accessoryView = nil
+            cellSelectionStates[tappedIndexPath.row] = .Omitted
+            if tappedCell.textLabel!.text! == "untagged" {
+               optionalTags!.remove("")
+               requiredTags!.remove("")
+            } else {
+               optionalTags!.remove(tappedCell.textLabel!.text!)
+               requiredTags!.remove(tappedCell.textLabel!.text!)
+            }
          }
       }
    }
@@ -125,4 +98,10 @@ class TagsViewController: UITableViewController {
       // ... (nothing?)
    }
 
+}
+
+enum SelectionState {
+   case Omitted
+   case Optional
+   case Required
 }
